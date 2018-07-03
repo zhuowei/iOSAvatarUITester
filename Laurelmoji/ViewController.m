@@ -19,6 +19,7 @@
 @protocol AVTPresenterDelegate <NSObject>
 @required
 - (void)presentAvatarUIController:(AVTUIControllerPresentation*)viewController animated:(bool)animated;
+- (void)dismissAvatarUIControllerAnimated:(bool)animated;
 @end
 
 @interface AVTCarouselController : NSObject
@@ -81,5 +82,8 @@
 
 - (void)presentAvatarUIController:(AVTUIControllerPresentation *)presentation animated:(bool)animated {
     [self presentViewController:presentation.controller animated:animated completion:nil];
+}
+- (void)dismissAvatarUIControllerAnimated:(bool)animated {
+    [self dismissViewControllerAnimated:animated completion:nil];
 }
 @end
