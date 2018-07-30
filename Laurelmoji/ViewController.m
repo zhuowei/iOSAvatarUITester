@@ -49,7 +49,7 @@
 @interface ViewController () <AVTPresenterDelegate>
 @property (strong, nonatomic) AVTCarouselController* carouselController;
 @end
-
+extern void bundlehook_init(void);
 @implementation ViewController
 
 - (void)viewDidLoad {
@@ -57,6 +57,7 @@
     // Do any additional setup after loading the view, typically from a nib.
     void* avatarUi = dlopen("/System/Library/PrivateFrameworks/AvatarUI.framework/AvatarUI", RTLD_LOCAL | RTLD_NOW);
     if (!avatarUi) abort();
+    bundlehook_init();
 }
 - (IBAction)startClicked3:(id)sender {
     AVTUIEnvironment* environment = [NSClassFromString(@"AVTUIEnvironment") defaultEnvironment];

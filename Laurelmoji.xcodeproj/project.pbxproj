@@ -13,6 +13,10 @@
 		C56C552920E8056300CDF61F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C56C552820E8056300CDF61F /* Assets.xcassets */; };
 		C56C552C20E8056300CDF61F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C56C552A20E8056300CDF61F /* LaunchScreen.storyboard */; };
 		C56C552F20E8056300CDF61F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C56C552E20E8056300CDF61F /* main.m */; };
+		C599F778210ECE430085511D /* AvatarKit.framework in Resources */ = {isa = PBXBuildFile; fileRef = C599F776210ECE0D0085511D /* AvatarKit.framework */; };
+		C599F779210ECE430085511D /* AvatarUI.framework in Resources */ = {isa = PBXBuildFile; fileRef = C599F770210ECDC00085511D /* AvatarUI.framework */; };
+		C599F77B210ECFBC0085511D /* SwizzleBundle.m in Sources */ = {isa = PBXBuildFile; fileRef = C599F77A210ECFBC0085511D /* SwizzleBundle.m */; };
+		C599F77E210ED7D20085511D /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C599F77D210ED7D20085511D /* Metal.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +30,10 @@
 		C56C552B20E8056300CDF61F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C56C552D20E8056300CDF61F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C56C552E20E8056300CDF61F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		C599F770210ECDC00085511D /* AvatarUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AvatarUI.framework; sourceTree = "<group>"; };
+		C599F776210ECE0D0085511D /* AvatarKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AvatarKit.framework; sourceTree = "<group>"; };
+		C599F77A210ECFBC0085511D /* SwizzleBundle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SwizzleBundle.m; sourceTree = "<group>"; };
+		C599F77D210ED7D20085511D /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,6 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C599F77E210ED7D20085511D /* Metal.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -44,6 +53,7 @@
 			children = (
 				C56C551E20E8056200CDF61F /* Laurelmoji */,
 				C56C551D20E8056200CDF61F /* Products */,
+				C599F77C210ED7D20085511D /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -62,13 +72,24 @@
 				C56C552020E8056200CDF61F /* AppDelegate.m */,
 				C56C552220E8056200CDF61F /* ViewController.h */,
 				C56C552320E8056200CDF61F /* ViewController.m */,
+				C599F77A210ECFBC0085511D /* SwizzleBundle.m */,
 				C56C552520E8056200CDF61F /* Main.storyboard */,
 				C56C552820E8056300CDF61F /* Assets.xcassets */,
 				C56C552A20E8056300CDF61F /* LaunchScreen.storyboard */,
 				C56C552D20E8056300CDF61F /* Info.plist */,
 				C56C552E20E8056300CDF61F /* main.m */,
+				C599F776210ECE0D0085511D /* AvatarKit.framework */,
+				C599F770210ECDC00085511D /* AvatarUI.framework */,
 			);
 			path = Laurelmoji;
+			sourceTree = "<group>";
+		};
+		C599F77C210ED7D20085511D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C599F77D210ED7D20085511D /* Metal.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -128,6 +149,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C599F778210ECE430085511D /* AvatarKit.framework in Resources */,
+				C599F779210ECE430085511D /* AvatarUI.framework in Resources */,
 				C56C552C20E8056300CDF61F /* LaunchScreen.storyboard in Resources */,
 				C56C552920E8056300CDF61F /* Assets.xcassets in Resources */,
 				C56C552720E8056200CDF61F /* Main.storyboard in Resources */,
@@ -141,6 +164,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C599F77B210ECFBC0085511D /* SwizzleBundle.m in Sources */,
 				C56C552420E8056200CDF61F /* ViewController.m in Sources */,
 				C56C552F20E8056300CDF61F /* main.m in Sources */,
 				C56C552120E8056200CDF61F /* AppDelegate.m in Sources */,
@@ -285,6 +309,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3D7RY4393N;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Laurelmoji",
+				);
 				INFOPLIST_FILE = Laurelmoji/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -302,6 +330,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3D7RY4393N;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Laurelmoji",
+				);
 				INFOPLIST_FILE = Laurelmoji/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
