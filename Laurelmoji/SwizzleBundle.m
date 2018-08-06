@@ -27,6 +27,15 @@ NSBundle* NSBundle_bundleForClass_hook(Class bundleClass, SEL selector, Class cl
     return retval;
 }
 
+NSURL* AVTUIEnvironment_storeLocation_hook(Class bundleClass, SEL selector, Class classToGet) {
+    NSFileManager* manager = [NSFileManager defaultManager];
+    NSArray<NSURL*>* documentDirectories = [manager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask];
+    if (documentDirectories.count < 1) {
+        abort();
+    }
+    return [documentDirectories[0] URLByAppendingPathComponent:@"Avatar" isDirectory:true];
+}
+
 void bundlehook_init() {
     static bool hooked = false;
     if (hooked) return;
@@ -34,4 +43,8 @@ void bundlehook_init() {
     Method method = class_getClassMethod([NSBundle class], @selector(bundleForClass:));
     NSBundle_bundleForClass_real = (void*)method_getImplementation(method);
     method_setImplementation(method, (IMP)&NSBundle_bundleForClass_hook);
+    {
+        Method method = class_getClassMethod(NSClassFromString(@"AVTUIEnvironment"), @selector(storeLocation));
+        method_setImplementation(method, (IMP)&AVTUIEnvironment_storeLocation_hook);
+    }
 }
