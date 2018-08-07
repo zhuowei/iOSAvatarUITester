@@ -12,6 +12,8 @@
 		C538309A2117F09800AE53E5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C53830982117F09800AE53E5 /* Main.storyboard */; };
 		C538309C2117F09900AE53E5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C538309B2117F09900AE53E5 /* Assets.xcassets */; };
 		C538309F2117F09900AE53E5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C538309D2117F09900AE53E5 /* LaunchScreen.storyboard */; };
+		C53AED0421190DCC00C4777C /* AvatarKit.framework in Resources */ = {isa = PBXBuildFile; fileRef = C53AED0021190DAE00C4777C /* AvatarKit.framework */; };
+		C53AED0521190DCC00C4777C /* AvatarUI.framework in Resources */ = {isa = PBXBuildFile; fileRef = C53AED0121190DAF00C4777C /* AvatarUI.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +24,8 @@
 		C538309B2117F09900AE53E5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C538309E2117F09900AE53E5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C53830A02117F09900AE53E5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C53AED0021190DAE00C4777C /* AvatarKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AvatarKit.framework; sourceTree = "<group>"; };
+		C53AED0121190DAF00C4777C /* AvatarUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AvatarUI.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +64,8 @@
 				C538309B2117F09900AE53E5 /* Assets.xcassets */,
 				C538309D2117F09900AE53E5 /* LaunchScreen.storyboard */,
 				C53830A02117F09900AE53E5 /* Info.plist */,
+				C53AED0021190DAE00C4777C /* AvatarKit.framework */,
+				C53AED0121190DAF00C4777C /* AvatarUI.framework */,
 			);
 			path = Laurelmoji2;
 			sourceTree = "<group>";
@@ -106,6 +112,44 @@
 			knownRegions = (
 				en,
 				Base,
+				de,
+				he,
+				en_AU,
+				ar,
+				el,
+				ja,
+				uk,
+				es_419,
+				zh_CN,
+				es,
+				da,
+				it,
+				sk,
+				pt_PT,
+				ms,
+				sv,
+				cs,
+				ko,
+				no,
+				hu,
+				zh_HK,
+				tr,
+				pl,
+				zh_TW,
+				en_GB,
+				vi,
+				ru,
+				fr_CA,
+				fr,
+				fi,
+				id,
+				nl,
+				th,
+				pt,
+				ro,
+				hr,
+				hi,
+				ca,
 			);
 			mainGroup = C53830882117F09800AE53E5;
 			productRefGroup = C53830922117F09800AE53E5 /* Products */;
@@ -122,6 +166,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C53AED0421190DCC00C4777C /* AvatarKit.framework in Resources */,
+				C53AED0521190DCC00C4777C /* AvatarUI.framework in Resources */,
 				C538309F2117F09900AE53E5 /* LaunchScreen.storyboard in Resources */,
 				C538309C2117F09900AE53E5 /* Assets.xcassets in Resources */,
 				C538309A2117F09800AE53E5 /* Main.storyboard in Resources */,
@@ -284,6 +330,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3D7RY4393N;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Laurelmoji2",
+				);
 				INFOPLIST_FILE = Laurelmoji2/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -302,6 +352,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3D7RY4393N;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Laurelmoji2",
+				);
 				INFOPLIST_FILE = Laurelmoji2/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

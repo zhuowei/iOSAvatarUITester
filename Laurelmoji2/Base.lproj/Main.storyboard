@@ -18,10 +18,14 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SH9-AW-S6g">
-                                <rect key="frame" x="0.0" y="20" width="46" height="30"/>
+                                <rect key="frame" x="0.0" y="20" width="100" height="100"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="100" id="Yy3-TH-2R9"/>
+                                    <constraint firstAttribute="height" constant="100" id="Zeh-G7-9gn"/>
+                                </constraints>
                                 <state key="normal" title="Button"/>
                                 <connections>
-                                    <action selector="buttonClicked" destination="BYZ-38-t0r" eventType="primaryActionTriggered" id="pWq-Pp-vtn"/>
+                                    <action selector="buttonClicked:" destination="BYZ-38-t0r" eventType="primaryActionTriggered" id="LeP-uT-uaB"/>
                                 </connections>
                             </button>
                         </subviews>
