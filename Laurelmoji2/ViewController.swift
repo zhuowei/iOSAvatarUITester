@@ -8,6 +8,7 @@
 
 import UIKit
 import ObjectiveC
+import SceneKit
 
 typealias BundleForClass_Type = @convention(c) (AnyClass, Selector, AnyClass) -> Bundle
 private var NSBundle_bundleForClass_real:BundleForClass_Type!
@@ -35,6 +36,53 @@ private func AVTUIEnvironment_storeLocation_hook(bundleClass: AnyClass, selector
     return documentDirectories[0].appendingPathComponent("Avatar", isDirectory: true) as NSURL
 }
 
+public func cleanupScene(scene: SCNScene) {
+    scene.rootNode.enumerateHierarchy() { node, _ in
+        guard let geometry = node.geometry else {
+            return
+        }
+        geometry.program = nil
+        geometry.tessellator = nil
+        geometry.shaderModifiers = nil
+        geometry.subdivisionLevel = 0
+        for material in geometry.materials {
+            material.program = nil
+            material.shaderModifiers = nil
+        }
+    }
+}
+
+typealias SCNScene_sceneWithURL_options_error_Type = @convention(c) (AnyClass, Selector, NSURL, NSDictionary, UnsafePointer<NSError>) -> SCNScene?
+private var SCNScene_sceneWithURL_options_error_real:SCNScene_sceneWithURL_options_error_Type!
+private func SCNScene_sceneWithURL_options_error_hook(self: AnyClass, sel: Selector, url: NSURL, options: NSDictionary, error: UnsafePointer<NSError>) -> SCNScene? {
+    guard let scene = SCNScene_sceneWithURL_options_error_real(self, sel, url, options, error) else {
+        return nil
+    }
+    cleanupScene(scene: scene)
+    return scene
+}
+
+typealias SCNView_initWithFrame_options_Type = @convention(c) (SCNView, Selector, CGRect, NSDictionary?) -> SCNView;
+private var SCNView_initWithFrame_options_real:SCNView_initWithFrame_options_Type!
+private func SCNView_initWithFrame_options_hook(self: SCNView, sel: Selector, frame: CGRect, options: NSDictionary?) -> SCNView {
+    let newOptions = options == nil ? NSMutableDictionary() : NSMutableDictionary(dictionary: options!)
+    //newOptions[SCNView.Option.preferredRenderingAPI] = SCNRenderingAPI.openGLES2.rawValue as NSNumber
+    let retval = SCNView_initWithFrame_options_real(self, sel, frame, newOptions)
+    //retval.debugOptions = [SCNDebugOptions.renderAsWireframe, SCNDebugOptions.showBoundingBoxes, SCNDebugOptions.showSkeletons]
+    //retval.debugOptions = [SCNDebugOptions.showWireframe]
+    retval.showsStatistics = true
+    return retval
+}
+
+typealias SCNView__drawAtTime_Type = @convention(c) (SCNView, Selector, Float64) -> Void;
+private var SCNView__drawAtTime_real:SCNView__drawAtTime_Type!
+private func SCNView__drawAtTime_hook(self: SCNView, sel: Selector, time: Float64) {
+    if let scene = self.scene {
+        cleanupScene(scene: scene)
+    }
+    SCNView__drawAtTime_real(self, sel, time)
+}
+
 private var hooked = false;
 private func hookMethods() {
     if hooked {
@@ -48,6 +96,10 @@ private func hookMethods() {
     }
     hookAvatarEnv()
     hookBundle()
+    hookSceneKit()
+    hookSceneKitView()
+    hookSceneKitView2()
+    hookGPUAvailable()
 }
 
 private func hookAvatarEnv() {
@@ -66,6 +118,34 @@ private func hookBundle() {
     method_setImplementation(method, unsafeBitCast(NSBundle_bundleForClass_hook as BundleForClass_Type, to: IMP.self))
 }
 
+private func hookSceneKit() {
+    guard let method = class_getClassMethod(SCNScene.self, Selector(("sceneWithURL:options:error:"))) else {
+        fatalError("Can't find method")
+    }
+    SCNScene_sceneWithURL_options_error_real = unsafeBitCast(method_getImplementation(method), to: SCNScene_sceneWithURL_options_error_Type.self)
+    method_setImplementation(method, unsafeBitCast(SCNScene_sceneWithURL_options_error_hook as SCNScene_sceneWithURL_options_error_Type, to: IMP.self))
+}
+
+private func hookSceneKitView() {
+    guard let method = class_getInstanceMethod(SCNView.self, Selector(("initWithFrame:options:"))) else {
+        fatalError("Can't find method")
+    }
+    SCNView_initWithFrame_options_real = unsafeBitCast(method_getImplementation(method), to: SCNView_initWithFrame_options_Type.self)
+    method_setImplementation(method, unsafeBitCast(SCNView_initWithFrame_options_hook as SCNView_initWithFrame_options_Type, to: IMP.self))
+}
+
+private func hookSceneKitView2() {
+    guard let method = class_getInstanceMethod(SCNView.self, Selector(("_drawAtTime:"))) else {
+        fatalError("Can't find method")
+    }
+    SCNView__drawAtTime_real = unsafeBitCast(method_getImplementation(method), to: SCNView__drawAtTime_Type.self)
+    method_setImplementation(method, unsafeBitCast(SCNView__drawAtTime_hook as SCNView__drawAtTime_Type, to: IMP.self))
+}
+
+private func hookGPUAvailable() {
+    
+}
+
 class ViewController: UIViewController {
     private var carouselController:NSObject?
     private var carouselSource:NSObject?
@@ -73,6 +153,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        self.view.backgroundColor = UIColor.lightGray
     }
 
     @IBAction
