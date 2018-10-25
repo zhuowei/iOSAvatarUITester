@@ -12,6 +12,7 @@
 @import ObjectiveC.runtime;
 @import GLKit;
 @import ARKit;
+#import "Laurelmoji-Swift.h"
 
 @interface ARFaceAnchor (Laurel)
 @property (nonatomic) simd_float4x4 transform;
@@ -35,6 +36,7 @@
 @end
 
 @interface AVTFaceTracker : NSObject<ARSessionDelegate>
++ (void)setUsesInternalTrackingPipeline:(BOOL)val;
 @end
 
 @interface AVTView : SCNView
@@ -153,8 +155,100 @@ static void hookARBlendMapping() {
     method_setImplementation(method, (IMP)&ARFaceAnchor_blendShapeMapping_hook);
 }
 
-@interface ViewController () <AVTPresenterDelegate>
+static NSBundle* appleCVABundle;
+
+static NSBundle* (*NSBundle_bundleWithIdentifier_real)(Class self, SEL sel, NSString* identifier);
+static NSBundle* NSBundle_bundleWithIdentifier_hook(Class self, SEL sel, NSString* identifier) {
+    if ([identifier isEqual:@"com.apple.AppleCVA"]) {
+        return appleCVABundle;
+    }
+    return NSBundle_bundleWithIdentifier_real(self, sel, identifier);
+}
+
+static void hookBundleWithIdentifier() {
+    appleCVABundle = [NSBundle bundleWithPath:[[NSBundle mainBundle] pathForResource:@"AppleCVA" ofType:@"framework"]];
+    Method method = class_getClassMethod([NSBundle class], @selector(bundleWithIdentifier:));
+    NSBundle_bundleWithIdentifier_real = (void*)method_getImplementation(method);
+    method_setImplementation(method, (IMP)&NSBundle_bundleWithIdentifier_hook);
+}
+
+static BOOL returnsTrue() {
+    return true;
+}
+@interface ARFaceTrackingTechnique: NSObject
+@end
+@interface ARFaceTrackingInternalTechnique : NSObject
+@end
+@interface ARFaceTrackingImageSensor: NSObject
+- (id)videoOutput;
+@end
+@interface ARInternalFaceTrackingConfiguration : NSObject
+@end
+static NSArray* (*avf_s_real)(Class, SEL, long long, NSString*);
+static NSArray* avf_s_hook(Class self, SEL sel, long long arg1, NSString* device) {
+    //id retval = avf_s_real(self, sel, arg1, AVCaptureDeviceTypeBuiltInWideAngleCamera);
+    return [[AVCaptureDevice defaultDeviceWithDeviceType:AVCaptureDeviceTypeBuiltInWideAngleCamera mediaType:AVMediaTypeVideo position:arg1] formats];
+}
+
+static NSString* ARFaceTrackingImageSensor_requiredFaceMetaDataObjectType_hook(ARFaceTrackingImageSensor* self, SEL sel) {
+    return nil;
+}
+
+static NSArray* ARFaceTrackingImageSensor_outputsForSynchronizer_hook(ARFaceTrackingImageSensor* self, SEL sel) {
+    return @[self.videoOutput];
+}
+
+static void hookReturnSupported() {
+    {
+        Method method = class_getClassMethod([ARConfiguration class], @selector(isSupported));
+        method_setImplementation(method, (IMP)&returnsTrue);
+    }
+    {
+        Method method = class_getClassMethod([ARFaceTrackingConfiguration class], @selector(isSupported));
+        method_setImplementation(method, (IMP)&returnsTrue);
+    }
+    {
+        Method method = class_getClassMethod([ARFaceTrackingTechnique class], @selector(isSupported));
+        method_setImplementation(method, (IMP)&returnsTrue);
+    }
+    {
+        Method method = class_getClassMethod([ARFaceTrackingInternalTechnique class], @selector(isSupported));
+        method_setImplementation(method, (IMP)&returnsTrue);
+    }
+    {
+        Method method = class_getClassMethod([ARInternalFaceTrackingConfiguration class], @selector(isSupported));
+        method_setImplementation(method, (IMP)&returnsTrue);
+    }
+    {
+        //Method method = class_getClassMethod([ARVideoFormat class], @selector(supportedVideoFormatsForDevicePosition:deviceType:));
+        //avf_s_real = (void*)method_getImplementation(method);
+        //method_setImplementation(method, (IMP)&avf_s_hook);
+        void* arkit = dlopen("/System/Library/Frameworks/ARKit.framework/ARKit", RTLD_LOCAL | RTLD_LAZY);
+        BOOL (*rgb)(void) = dlsym(arkit, "ARCoreMediaRGBFaceTrackingEnabled");
+        rgb();
+        NSString* (*device)(void) = dlsym(arkit, "ARFaceTrackingDevice");
+        device();
+        BOOL* rgbEnabled = [LookupPrivateSymbols findAddressInLibraryWithLibraryName:@"/System/Library/Frameworks/ARKit.framework/ARKit" symName:@"_ARCoreMediaRGBFaceTrackingEnabled.faceTrackingEnabled"];
+        *rgbEnabled = YES;
+        
+        void** deviceName = [LookupPrivateSymbols findAddressInLibraryWithLibraryName:@"/System/Library/Frameworks/ARKit.framework/ARKit" symName:@"_ARFaceTrackingDevice.deviceType"];
+        *deviceName = (void*)(uintptr_t)AVCaptureDeviceTypeBuiltInWideAngleCamera;
+        NSLog(@"%s %@", rgb()? "yes": "no", device());
+    }
+    {
+        Method method = class_getInstanceMethod([ARFaceTrackingImageSensor class], @selector(requiredFaceMetaDataObjectType));
+        method_setImplementation(method, (IMP)&ARFaceTrackingImageSensor_requiredFaceMetaDataObjectType_hook);
+    }
+    {
+        Method method = class_getInstanceMethod([ARFaceTrackingImageSensor class], @selector(outputsForSynchronizer));
+        method_setImplementation(method, (IMP)&ARFaceTrackingImageSensor_outputsForSynchronizer_hook);
+    }
+}
+
+@interface ViewController () <AVTPresenterDelegate, WDBCameraWrapperDelegate>
 @property (strong, nonatomic) AVTCarouselController* carouselController;
+@property (strong, nonatomic) NSTimer* animationTimer;
+@property (strong, nonatomic) WDBCameraWrapper* cameraWrapper;
 @end
 extern void bundlehook_init(void);
 @implementation ViewController
@@ -170,8 +264,16 @@ extern void bundlehook_init(void);
     hooked = YES;
     
     bundlehook_init();
+    hookBundleWithIdentifier();
     hookSceneKit();
+    hookReturnSupported();
     hookARBlendMapping();
+    // ARKit has two pipelines
+    // the Internal pipeline uses AppleCVA.framework and detects faces with CoreML
+    // launched via ARInternalFaceTrackingConfiguration
+    // the default pipeline seems to be hardware accelerated?
+    // launched via ARFaceTrackingConfiguration
+    [NSClassFromString(@"AVTFaceTracker") setUsesInternalTrackingPipeline:YES];
 }
 - (IBAction)startClicked3:(id)sender {
     AVTUIEnvironment* environment = [NSClassFromString(@"AVTUIEnvironment") defaultEnvironment];
@@ -181,7 +283,7 @@ extern void bundlehook_init(void);
 }
 - (IBAction)startClicked:(id)sender {
     if (self.carouselController) {
-        [self resetIt];
+        [self resetIt:nil];
         return;
     }
     /*
@@ -197,6 +299,12 @@ extern void bundlehook_init(void);
     //[self.view addSubview:avtViewContainer];
     //[self.view addSubview:controller.multiAvatarController.view];
     self.carouselController = controller;
+    //self.animationTimer = [NSTimer scheduledTimerWithTimeInterval:1/15. target:self selector:@selector(resetIt) userInfo:nil repeats:YES];
+    /*
+    self.cameraWrapper = [[WDBCameraWrapper alloc]init];
+    self.cameraWrapper.delegate = self;
+    [self.cameraWrapper startRunning];
+     */
 }
 
 - (void)presentAvatarUIController:(AVTUIControllerPresentation *)presentation animated:(bool)animated {
@@ -206,28 +314,26 @@ extern void bundlehook_init(void);
     [self dismissViewControllerAnimated:animated completion:nil];
 }
 
-- (void)resetIt {
+- (void)resetIt:(WDBCameraWrapperFrameData*)frameData {
     static double timestamp = 0;
-    WDBSimFrame* frame = [[WDBSimFrame alloc]initWithTimestamp:timestamp++ context:nil];
+    AVTFaceTracker* tracker = self.carouselController.focusedDisplayView.faceTracker;
+    if (!tracker) return;
+    
+    WDBSimFrame* frame = [[WDBSimFrame alloc]initWithTimestamp:timestamp context:nil];
     WDBSimFaceAnchor* faceAnchor = [[WDBSimFaceAnchor alloc]init];
     frame.anchors = @[faceAnchor];
     //faceAnchor.transform = matrix_identity_float4x4;
     simd_float3 zaxis = {0, 0, 1};
     simd_quatf rotation = simd_quaternion((float)M_PI_2, zaxis);
-    faceAnchor.transform = simd_matrix4x4(rotation);
-    faceAnchor.blendShapes2 = @{
-                               ARBlendShapeLocationEyeBlinkLeft: @0,
-                               ARBlendShapeLocationEyeBlinkRight: @0,
-                               ARBlendShapeLocationMouthClose: @0,
-                               ARBlendShapeLocationMouthPressLeft: @0,
-                               ARBlendShapeLocationMouthPressRight: @0,
-                               ARBlendShapeLocationMouthPucker: @1,
-                               ARBlendShapeLocationMouthFunnel: @0,
-                               ARBlendShapeLocationMouthShrugLower: @0,
-                               ARBlendShapeLocationTongueOut: @1,
-                               ARBlendShapeLocationJawOpen: @1,
-                               };
-    [self.carouselController.focusedDisplayView.faceTracker session:@"nope" didUpdateFrame:frame];
+    simd_float4x4 rotationMatrix = simd_matrix4x4(rotation);
+    rotationMatrix.columns[3][2] = frameData.z;
+    faceAnchor.transform = rotationMatrix;
+    faceAnchor.blendShapes2 = frameData.blendShapes;
+    [tracker session:@"nope" didUpdateFrame:frame];
+    timestamp += (1/15.);
+}
+- (void)cameraWrapper:(WDBCameraWrapper *)cameraWrapper didReceiveFrame:(WDBCameraWrapperFrameData *)frame {
+    [self resetIt:frame];
 }
 @end
 @interface WDBDankArray: NSArray
@@ -272,19 +378,20 @@ static id dankify(NSObject* input) {
 - (CGAffineTransform)displayTransformForOrientation:(UIInterfaceOrientation)orientation viewportSize:(CGSize)viewportSize {
     abort();
 }
-- (ARCamera*)camera {
+/*- (ARCamera*)camera {
     NSLog(@"Camera!");
     return [super camera];
 }
+ */
 @end
 
 @implementation WDBSimFaceAnchor
 - (simd_float4x4)transform {
-    NSLog(@"Transform!");
+    //NSLog(@"Transform!");
     return [super transform];
 }
 - (NSDictionary<ARBlendShapeLocation,NSNumber *>*)blendShapes{
-    NSLog(@"Blend shapes!");
+    //NSLog(@"Blend shapes!");
     return self.blendShapes2;
 }
 - (BOOL)isTracked {
@@ -295,7 +402,7 @@ static id dankify(NSObject* input) {
     abort();
 }
 - (id)trackingData {
-    NSLog(@"trackingData");
+    //NSLog(@"trackingData");
     NSDictionary* blendShapeDict = getBlendShapeDict();
     float blendshapes[blendShapeDict.count];
     for (int i = 0; i < blendShapeDict.count; i++) {
