@@ -42,9 +42,9 @@ public func cleanupScene(scene: SCNScene) {
             return
         }
         geometry.program = nil
-        geometry.tessellator = nil
         geometry.shaderModifiers = nil
         geometry.subdivisionLevel = 0
+        
         for material in geometry.materials {
             material.program = nil
             material.shaderModifiers = nil
@@ -69,18 +69,18 @@ private func SCNView_initWithFrame_options_hook(self: SCNView, sel: Selector, fr
     //newOptions[SCNView.Option.preferredRenderingAPI] = SCNRenderingAPI.openGLES2.rawValue as NSNumber
     let retval = SCNView_initWithFrame_options_real(self, sel, frame, newOptions)
     //retval.debugOptions = [SCNDebugOptions.renderAsWireframe, SCNDebugOptions.showBoundingBoxes, SCNDebugOptions.showSkeletons]
-    //retval.debugOptions = [SCNDebugOptions.showWireframe]
+    retval.debugOptions = [SCNDebugOptions.showWireframe]
     retval.showsStatistics = true
     return retval
 }
 
-typealias SCNView__drawAtTime_Type = @convention(c) (SCNView, Selector, Float64) -> Void;
-private var SCNView__drawAtTime_real:SCNView__drawAtTime_Type!
-private func SCNView__drawAtTime_hook(self: SCNView, sel: Selector, time: Float64) {
-    if let scene = self.scene {
+typealias SCNRenderer__drawScene_Type = @convention(c) (SCNView, Selector, AnyObject) -> Void;
+private var SCNRenderer__drawScene_real:SCNRenderer__drawScene_Type!
+private func SCNRenderer__drawScene_hook(self: SCNView, sel: Selector, c3dScene: AnyObject) {
+    if let scene = self.value(forKey: "scene") as? SCNScene {
         cleanupScene(scene: scene)
     }
-    SCNView__drawAtTime_real(self, sel, time)
+    SCNRenderer__drawScene_real(self, sel, c3dScene)
 }
 
 private var hooked = false;
@@ -135,15 +135,14 @@ private func hookSceneKitView() {
 }
 
 private func hookSceneKitView2() {
-    guard let method = class_getInstanceMethod(SCNView.self, Selector(("_drawAtTime:"))) else {
+    guard let method = class_getInstanceMethod(SCNRenderer.self, Selector(("_drawScene:"))) else {
         fatalError("Can't find method")
     }
-    SCNView__drawAtTime_real = unsafeBitCast(method_getImplementation(method), to: SCNView__drawAtTime_Type.self)
-    method_setImplementation(method, unsafeBitCast(SCNView__drawAtTime_hook as SCNView__drawAtTime_Type, to: IMP.self))
+    SCNRenderer__drawScene_real = unsafeBitCast(method_getImplementation(method), to: SCNRenderer__drawScene_Type.self)
+    method_setImplementation(method, unsafeBitCast(SCNRenderer__drawScene_hook as SCNRenderer__drawScene_Type, to: IMP.self))
 }
 
 private func hookGPUAvailable() {
-    
 }
 
 class ViewController: UIViewController {
